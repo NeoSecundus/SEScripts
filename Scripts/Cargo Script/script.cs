@@ -16,14 +16,12 @@ using Sandbox.Game.EntityComponents;
 using SpaceEngineers.Game.ModAPI.Ingame;
 using VRage.Game.ObjectBuilders.Definitions;
 
-namespace SpaceEngineers.UWBlockPrograms.DEFAULT {
+namespace SpaceEngineers.UWBlockPrograms.CargoScript {
     public sealed class Program : MyGridProgram {
 #endregion
 // YOUR CODE BEGIN
-public Program() {
-}
-
 public void Main(string argument, UpdateType updateSource) {
+
 }
 // YOUR CODE END
 #region PreludeFooter

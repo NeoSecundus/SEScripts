@@ -1,7 +1,29 @@
-﻿IMyTerminalBlock deactivatedDoor;
+#region Prelude
+using System;
+using System.Linq;
+using System.Text;
+using System.Collections;
+using System.Collections.Generic;
+
+using VRageMath;
+using VRage.Game;
+using VRage.Collections;
+using Sandbox.ModAPI.Ingame;
+using VRage.Game.Components;
+using VRage.Game.ModAPI.Ingame;
+using Sandbox.ModAPI.Interfaces;
+using Sandbox.Game.EntityComponents;
+using SpaceEngineers.Game.ModAPI.Ingame;
+using VRage.Game.ObjectBuilders.Definitions;
+
+namespace SpaceEngineers.UWBlockPrograms.AirlockScript {
+    public sealed class Program : MyGridProgram {
+#endregion
+// YOUR CODE BEGIN
+IMyTerminalBlock deactivatedDoor;
 int delay = 0;
 
-public void Main(string argument, UpdateType updateSource) {
+public void Main(string argument, UpdateType updateSource) {
    var airVent = GridTerminalSystem.GetBlockWithName("Airlock Vent");
    var outDoor = GridTerminalSystem.GetBlockWithName("Sliding Door Outside");
    var inDoor = GridTerminalSystem.GetBlockWithName("Sliding Door Inside");
@@ -37,3 +59,8 @@ public void Main(string argument, UpdateType updateSource) {
        delay--;
    }
 } 
+// YOUR CODE END
+#region PreludeFooter
+    }
+}
+#endregion
