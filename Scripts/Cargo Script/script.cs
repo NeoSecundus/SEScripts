@@ -21,7 +21,7 @@ namespace SpaceEngineers.UWBlockPrograms.CargoScript {
 #endregion
 // YOUR CODE BEGIN
 public void Main(string argument, UpdateType updateSource) {
-
+    
 }
 // YOUR CODE END
 #region PreludeFooter

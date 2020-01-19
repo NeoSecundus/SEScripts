@@ -1,0 +1,45 @@
+#region Prelude
+using System;
+using System.Linq;
+using System.Text;
+using System.Collections;
+using System.Collections.Generic;
+
+using VRageMath;
+using VRage.Game;
+using VRage.Collections;
+using Sandbox.ModAPI.Ingame;
+using VRage.Game.Components;
+using VRage.Game.ModAPI.Ingame;
+using Sandbox.ModAPI.Interfaces;
+using Sandbox.Game.EntityComponents;
+using SpaceEngineers.Game.ModAPI.Ingame;
+using VRage.Game.ObjectBuilders.Definitions;
+
+namespace SpaceEngineers.UWBlockPrograms.CockpitDisplay_Part {
+    public sealed class Program : MyGridProgram {
+#endregion
+// YOUR CODE BEGIN
+private void writeToCockpit(int displayNum, string text, int cockPitNum=0) {
+    List<IMyCockpit> blocks = new List<IMyCockpit>();
+    GridTerminalSystem.GetBlocksOfType<IMyCockpit>(blocks);
+    if (blocks.Count < cockPitNum) {
+        Echo("No Cockpit with ID: " + cockPitNum);
+        return;
+    }
+
+    IMyTextSurfaceProvider c = blocks[cockPitNum] as IMyCockpit;
+    if (c.SurfaceCount < displayNum) {
+        Echo("No Display with ID: " + displayNum);
+        return;
+    }
+
+    c.GetSurface(displayNum).WriteText(text);
+}
+
+
+// YOUR CODE END
+#region PreludeFooter
+    }
+}
+#endregion
