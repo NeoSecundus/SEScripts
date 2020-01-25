@@ -16,7 +16,7 @@ using Sandbox.Game.EntityComponents;
 using SpaceEngineers.Game.ModAPI.Ingame;
 using VRage.Game.ObjectBuilders.Definitions;
 
-namespace SpaceEngineers.UWBlockPrograms.AirlockScript {
+namespace SpaceEngineers.UWBlockPrograms.CockpitDisplay_Part {
     public sealed class Program : MyGridProgram {
 #endregion
 // YOUR CODE BEGIN
@@ -59,6 +59,7 @@ public void Main(string argument, UpdateType updateSource) {
        delay--;
    }
 } 
+
 // YOUR CODE END
 #region PreludeFooter
     }
