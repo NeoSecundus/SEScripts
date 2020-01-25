@@ -1,0 +1,2 @@
+API Docu Full: https://github.com/malware-dev/MDK-SE/wiki/Api-Index
+Space Engineers Programming Guide: http://spaceengineerswiki.com/Programming_Guide

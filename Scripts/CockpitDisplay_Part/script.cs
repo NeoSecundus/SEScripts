@@ -37,6 +37,26 @@ private void writeToCockpit(int displayNum, string text, int cockPitNum=0) {
     c.GetSurface(displayNum).WriteText(text);
 }
 
+private void setupCockpit(int displayNum, float fontSize, Color fontColor, int cockPitNum = 0) {
+   List<IMyCockpit> blocks = new List<IMyCockpit>();
+    GridTerminalSystem.GetBlocksOfType<IMyCockpit>(blocks);
+    if (blocks.Count < cockPitNum) {
+        Echo("No Cockpit with ID: " + cockPitNum);
+        return;
+    }
+
+    IMyTextSurfaceProvider c = blocks[cockPitNum] as IMyCockpit;
+    if (c.SurfaceCount < displayNum) {
+        Echo("No Display with ID: " + displayNum);
+        return;
+    }
+    
+   IMyTextSurface display = c.GetSurface(displayNum);
+    display.ContentType = ContentType.TEXT_AND_IMAGE;
+    display.FontColor = fontColor;
+    display.FontSize = fontSize;
+}
+
 
 // YOUR CODE END
 #region PreludeFooter

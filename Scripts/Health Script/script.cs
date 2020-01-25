@@ -20,34 +20,45 @@ namespace SpaceEngineers.UWBlockPrograms.CockpitDisplay_Part {
     public sealed class Program : MyGridProgram {
 #endregion
 // YOUR CODE BEGIN
-﻿public void Main(string argument, UpdateType updateSource) {
-    if (argument == "") {
-       argument = "0";
-   }
-    setupCockpit(Convert.ToInt32(argument),  1.5f, Color.Orange);
+﻿float maxHealth = 0;
 
-    List<IMyFunctionalBlock> blocks = new List<IMyFunctionalBlock>();
-    GridTerminalSystem.GetBlocksOfType<IMyFunctionalBlock>(blocks);
+public void Main(string argument, UpdateType updateSource) {
+   if (argument == "") argument = "0";
+    setupCockpit(Convert.ToInt32(argument), 1.4f, Color.DarkRed);
+    string printStr = "";
+    List<IMyTerminalBlock> blocks = new List<IMyTerminalBlock>(); 
+    
+   GridTerminalSystem.GetBlocks(blocks); 
 
-    float tempVal;
-    string printString = "";
-    float maxInv = 0;
-    float curInv = 0;
-    foreach (IMyFunctionalBlock block in blocks) {
-        if (!block.HasInventory || block is IMyReactor || !block.ShowInInventory) continue;
+   if (maxHealth == 0 || blocks.Count > maxHealth) {
+   maxHealth = blocks.Count;
+}
 
-        IMyInventory inv = block.GetInventory();
-        maxInv += (float)inv.MaxVolume;
-        curInv += (float)inv.CurrentVolume;
-        tempVal = (float)inv.CurrentVolume * 100 / (float)inv.MaxVolume;
-        printString += block.CustomName + ": " + Convert.ToInt32(tempVal) + "%\n";
+    float fullHealth = 0;
+    foreach (IMyTerminalBlock block in blocks) {
+       float curHealth = getBlockHealth(block);
+        fullHealth += curHealth;
+        if (curHealth < 0.99f) {
+            block.ShowOnHUD = true;
+            printStr += block.CustomName + " damaged: " + (int)(curHealth * 100) + "%\n";
+        } else {
+           block.ShowOnHUD = false;
+       }
     }
 
-   int fillRatio = (int)(curInv * 100 / maxInv);
-   printString = "Fill Ratio: " + fillRatio + "%\n" + "----------\n" + printString;
-   writeToCockpit(Convert.ToInt32(argument), printString);
-   Runtime.UpdateFrequency = UpdateFrequency.Update100;
+    printStr = "Ship Health: " + (int)(fullHealth * 100 / maxHealth) + "%\n" + printStr;
+    writeToCockpit(Convert.ToInt32(argument), printStr);
+    Runtime.UpdateFrequency = UpdateFrequency.Update100;
 }
+
+public float getBlockHealth(IMyTerminalBlock block)  
+            {  
+                IMySlimBlock slimblock = block.CubeGrid.GetCubeBlock(block.Position);  
+                float MaxIntegrity = slimblock.MaxIntegrity;  
+                float BuildIntegrity = slimblock.BuildIntegrity;  
+                float CurrentDamage = slimblock.CurrentDamage;
+                return (BuildIntegrity - CurrentDamage) / MaxIntegrity;  
+            }  
 
 private void writeToCockpit(int displayNum, string text, int cockPitNum=0) {
     List<IMyCockpit> blocks = new List<IMyCockpit>();
