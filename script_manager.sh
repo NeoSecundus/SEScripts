@@ -24,7 +24,6 @@ while true; do
     elif [[ "${comm:0:4}" == "push" ]]; then
         if [[ -d "./Scripts/${comm:5}" ]]; then
             cp -r "./Scripts/${comm:5}" "./temp/"
-            rm "./temp/SpaceEngineers.csproj"
             sed -i '/#region Prelude/, /YOUR CODE BEGIN/d' "./temp/script.cs"
             sed -i "/YOUR CODE END/g" "./temp/script.cs"
             rm -r "$SEScripts/${comm:5}" 2> /dev/null
@@ -70,7 +69,6 @@ while true; do
         if [[ -d "$SEScripts/${comm:5}" ]]; then
             cp -r "$SEScripts/${comm:5}" "./Scripts/"
             cp default/thumb.png "./Scripts/${comm:5}/thumb.png"
-            cp default/SpaceEngineers.csproj "./Scripts/${comm:5}/SpaceEngineers.csproj"
             TEMP=$(cat "./Scripts/${comm:5}/script.cs")
             cat extensions/header.txt > "./Scripts/${comm:5}/script.cs"
             echo "$TEMP" >> "./Scripts/${comm:5}/script.cs"
