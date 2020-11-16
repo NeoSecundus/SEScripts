@@ -52,14 +52,13 @@ public void Main(string argument, UpdateType updateSource) {
     Runtime.UpdateFrequency = UpdateFrequency.Update100;
 }
 
-public float getBlockHealth(IMyTerminalBlock block)  
-            {  
-                IMySlimBlock slimblock = block.CubeGrid.GetCubeBlock(block.Position);  
-                float MaxIntegrity = slimblock.MaxIntegrity;  
-                float BuildIntegrity = slimblock.BuildIntegrity;  
-                float CurrentDamage = slimblock.CurrentDamage;
-                return (BuildIntegrity - CurrentDamage) / MaxIntegrity;  
-            }  
+public float getBlockHealth(IMyTerminalBlock block) {
+    IMySlimBlock slimblock = block.CubeGrid.GetCubeBlock(block.Position);  
+    float MaxIntegrity = slimblock.MaxIntegrity;  
+    float BuildIntegrity = slimblock.BuildIntegrity;  
+    float CurrentDamage = slimblock.CurrentDamage;
+    return (BuildIntegrity - CurrentDamage) / MaxIntegrity;  
+}
 
 private void writeToCockpit(int displayNum, string text, int cockPitNum=0) {
     List<IMyCockpit> blocks = new List<IMyCockpit>();

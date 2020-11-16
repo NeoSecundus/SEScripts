@@ -44,7 +44,7 @@ public void Main(string argument, UpdateType updateSource) {
     float turbineWatts = 0;
     float solarWatts = 0;
     float reactorWatts = 0;
-    long uranium = 0;
+    float uranium = 0;
     float engineWatts = 0;
     
     // define battery variables
@@ -76,7 +76,7 @@ public void Main(string argument, UpdateType updateSource) {
     // reactor section
     foreach (IMyReactor reactor in reactors) {
         reactorWatts += reactor.CurrentOutput*1000;
-        uranium += reactor.GetInventory().CurrentMass.RawValue;
+        uranium += (float)reactor.GetInventory().CurrentMass;
     }
     
     // hydrogen engine section
@@ -112,7 +112,7 @@ public void Main(string argument, UpdateType updateSource) {
         entries++;
     }
     if (reactors.Count > 0) {
-        lcdText += $"Reactors: {reactors.Count}\nOutput: {reactorWatts:F1}kW\nUranium: {uranium}U\n\n";
+        lcdText += $"Reactors: {reactors.Count}\nOutput: {reactorWatts:F1}kW\nUranium: {uranium:F2}U\n\n";
         entries++;
     }
     if (engines.Count > 0) {
@@ -122,6 +122,7 @@ public void Main(string argument, UpdateType updateSource) {
     if (batteries.Count > 0) {
         lcdText += $"Batteries: {batteries.Count}\nFillLevel: {bFillRatio:F1}% and currently {(batteries[0].IsCharging ? "Charging" : "Discharging")}\nTime Left: ";
         lcdText += $"{Math.Floor(bTimeLeft/3600):00}:{Math.Floor((bTimeLeft%3600)/60):00}:{Math.Floor(bTimeLeft%60):00}\n\n";
+        lcdText += $"Total Flow: {bPowerFlow:F2}MW\n";
         entries++;
     }
     lcdText += $"Total Production: {(solarWatts + turbineWatts + engineWatts + reactorWatts)/1000:F3}MW";
