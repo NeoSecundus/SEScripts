@@ -27,9 +27,6 @@ public Program() {
     Runtime.UpdateFrequency = UpdateFrequency.Update100;
 }
 
-const float GATLING_AMMO_VOL = 12.0f;
-const float INTERIOR_AMMO_VOL = 0.2f;
-const float MISSILE_AMMO_VOL = 60.0f;
 public void Main(string argument, UpdateType updateSource) {
     List<IMyLargeGatlingTurret> gatlings = new List<IMyLargeGatlingTurret>();
     List<IMyLargeMissileTurret> missiles = new List<IMyLargeMissileTurret>();
@@ -50,17 +47,17 @@ public void Main(string argument, UpdateType updateSource) {
 
     // Gatling Section
     foreach (var gatling in gatlings) {
-        printString += constructGunString(gatling, GATLING_AMMO_VOL);
+        printString += constructGunString(gatling);
     }
 
     // Missile Section
     foreach (var missile in missiles) {
-        printString += constructGunString(missile, MISSILE_AMMO_VOL);
+        printString += constructGunString(missile);
     }
 
     // Interior Turret Section
     foreach (var interior in interiors) {
-        printString += constructGunString(interior, INTERIOR_AMMO_VOL);
+        printString += constructGunString(interior);
     }
     
     foreach (var panel in panels) {
@@ -71,13 +68,13 @@ public void Main(string argument, UpdateType updateSource) {
     }
 }
 
-public string constructGunString(IMyFunctionalBlock block, float ammo_vol) {
-    IMyInventory inv = block.GetInventory();
-        float vol = (float)inv.CurrentVolume;
-        int ammo = (int)(vol*12.501 / INTERIOR_AMMO_VOL);
-        
-        int health = (int)(getBlockHealth(block) * 100);
-        return $"{block.CustomName}: {ammo}u | {health}%\n";
+public string constructGunString(IMyFunctionalBlock block) {
+    List<MyInventoryItem> items = new List<MyInventoryItem>();
+    block.GetInventory().GetItems(items);
+    int ammo = (int)items[0].Amount;
+    
+    int health = (int)(getBlockHealth(block) * 100);
+    return $"{block.CustomName}: {ammo}u | {health}%\n";
 }
 
 public float getBlockHealth(IMyTerminalBlock block) {  

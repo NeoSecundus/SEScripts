@@ -59,9 +59,16 @@ public void Main(string argument, UpdateType updateSource) {
     foreach (var block in blocks) {
         if (!block.HasInventory) continue;
 
-        IMyInventory inv = block.GetInventory();
         List<MyInventoryItem> items = new List<MyInventoryItem>();
+        IMyInventory inv = block.GetInventory();
         inv.GetItems(items);
+
+        if (block.InventoryCount > 1) {
+            inv = block.GetInventory(1);
+            List<MyInventoryItem> items_2 = new List<MyInventoryItem>();
+            inv.GetItems(items_2);
+            ListExtensions.AddList<MyInventoryItem>(items, items_2);
+        }
 
         foreach (var item in items) {
             string itemName = item.Type.SubtypeId;

@@ -16,6 +16,7 @@ using Sandbox.ModAPI.Interfaces;
 using Sandbox.Game.EntityComponents;
 using SpaceEngineers.Game.ModAPI.Ingame;
 using VRage.Game.ObjectBuilders.Definitions;
+using Sandbox.Game.WorldEnvironment.Definitions;
 
 namespace SpaceEngineers.UWBlockPrograms.SupervisionScript {
     public sealed class Program : MyGridProgram {
@@ -201,17 +202,17 @@ public void GunSupervision() {
         if (gatling.GetValue<bool>("TargetNeutrals")) {
             targetNeutrals = true;
         }
-        printString += constructGunString(gatling, GATLING_AMMO_VOL);
+        printString += constructGunString(gatling);
     }
 
     // Missile Section
     foreach (var missile in missiles) {
-        printString += constructGunString(missile, MISSILE_AMMO_VOL);
+        printString += constructGunString(missile);
     }
 
     // Interior Turret Section
     foreach (var interior in interiors) {
-        printString += constructGunString(interior, INTERIOR_AMMO_VOL);
+        printString += constructGunString(interior);
     }
 
     if (targetNeutrals) {
@@ -255,9 +256,16 @@ public void ResourceSupervision() {
     foreach (var block in blocks) {
         if (!block.HasInventory) continue;
 
-        IMyInventory inv = block.GetInventory();
         List<MyInventoryItem> items = new List<MyInventoryItem>();
+        IMyInventory inv = block.GetInventory();
         inv.GetItems(items);
+
+        if (block.InventoryCount > 1) {
+            inv = block.GetInventory(1);
+            List<MyInventoryItem> items_2 = new List<MyInventoryItem>();
+            inv.GetItems(items_2);
+            ListExtensions.AddList<MyInventoryItem>(items, items_2);
+        }
 
         foreach (var item in items) {
             string itemName = item.Type.SubtypeId;
@@ -279,7 +287,7 @@ public void ResourceSupervision() {
     foreach (var panel in panels) {
         panel.ContentType = ContentType.TEXT_AND_IMAGE;
         panel.FontSize = 1.0f;
-        panel.FontColor = Color.Silver;
+        panel.FontColor = Color.Aqua;
         panel.WriteText(printString);
     }
 }
@@ -297,7 +305,8 @@ public void CargoSupervision() {
     float maxInv = 0;
     float curInv = 0;
     foreach (IMyTerminalBlock block in blocks) {
-        if (!block.HasInventory || block is IMyReactor || !block.ShowInInventory) continue;
+        if (!block.HasInventory || block is IMyReactor 
+        || !block.ShowInInventory || block.CubeGrid.CustomName != Me.CubeGrid.CustomName) continue;
 
         IMyInventory inv = block.GetInventory();
         maxInv += (float)inv.MaxVolume;
@@ -316,13 +325,13 @@ public void CargoSupervision() {
     }
 }
 
-public string constructGunString(IMyFunctionalBlock block, float ammo_vol) {
-    IMyInventory inv = block.GetInventory();
-        float vol = (float)inv.CurrentVolume;
-        int ammo = (int)(vol*12.501 / INTERIOR_AMMO_VOL);
-        
-        int health = (int)(getBlockHealth(block) * 100);
-        return $"{block.CustomName}: {ammo}u | {health}%\n";
+public string constructGunString(IMyFunctionalBlock block) {
+    List<MyInventoryItem> items = new List<MyInventoryItem>();
+    block.GetInventory().GetItems(items);
+    int ammo = (int)items[0].Amount;
+    
+    int health = (int)(getBlockHealth(block) * 100);
+    return $"{block.CustomName}: {ammo}u | {health}%\n";
 }
 
 public float getBlockHealth(IMyTerminalBlock block) {  
