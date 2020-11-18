@@ -271,7 +271,7 @@ public void ResourceSupervision() {
             string itemName = item.Type.SubtypeId;
             if (item.Type.TypeId == "MyObjectBuilder_Ingot") {
                 ingots[itemName] += (float)item.Amount;
-            } else if (item.Type.TypeId == "MyObjectBuilder_Ore") {
+            } else if (item.Type.TypeId == "MyObjectBuilder_Ore" && itemName != "Scrap") {
                 ores[itemName] += (float)item.Amount;
             }
         }
@@ -286,7 +286,7 @@ public void ResourceSupervision() {
 
     foreach (var panel in panels) {
         panel.ContentType = ContentType.TEXT_AND_IMAGE;
-        panel.FontSize = 1.0f;
+        panel.FontSize = 1.2f;
         panel.FontColor = Color.Aqua;
         panel.WriteText(printString);
     }

@@ -21,7 +21,7 @@ namespace SpaceEngineers.UWBlockPrograms.HealthScript {
     public sealed class Program : MyGridProgram {
 #endregion
 // YOUR CODE BEGIN
-﻿float maxHealth = 0;
+float maxHealth = 0;
 
 public void Main(string argument, UpdateType updateSource) {
    if (argument == "") argument = "0";
