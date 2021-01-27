@@ -2,7 +2,4 @@ obj/
 bin/
 .vs
 *.vscode
-*.csproj*
-*.config
 *.sln
-!default/SpaceEngineers.csproj
