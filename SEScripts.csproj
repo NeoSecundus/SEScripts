@@ -124,16 +124,15 @@
   <ItemGroup>
     <Compile Include="default\script.cs" />
     <Compile Include="Scripts\Airlock Script\script.cs" />
-    <Compile Include="Scripts\Cargo Script\Script.cs" />
     <Compile Include="Scripts\CockpitDisplay_Part\script.cs" />
-    <Compile Include="Scripts\Energy Script\script.cs" />
     <Compile Include="Scripts\Health Script\script.cs" />
     <Compile Include="Scripts\CargoD Script\script.cs"/>
-    <Compile Include="Scripts\Gun Script\script.cs"/>
-    <Compile Include="Scripts\Resource Script\script.cs"/>
     <Compile Include="Scripts\Elevator Script\script.cs"/>
     <Compile Include="Scripts\Supervision Script\script.cs"/>
-        <Compile Include="Scripts\SpaceElevator\script.cs"/>
+    <Compile Include="Scripts\SpaceElevatorOld\script.cs"/>
+    <Compile Include="Scripts\SpaceElevator\script.cs"/>
+    <Compile Include="Scripts\CargoBoy\script.cs"/>
+    <Compile Include="Scripts\CamViewer\script.cs"/>
   </ItemGroup>
   <ItemGroup>
     <Content Include="default\thumb.png" />

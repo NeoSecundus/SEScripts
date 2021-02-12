@@ -16,97 +16,193 @@ using Sandbox.ModAPI.Interfaces;
 using Sandbox.Game.EntityComponents;
 using SpaceEngineers.Game.ModAPI.Ingame;
 using VRage.Game.ObjectBuilders.Definitions;
-using Microsoft.Xml.Serialization.GeneratedAssembly;
+using System.Linq.Expressions;
+using Sandbox.Game;
+using System.Diagnostics.Contracts;
+using VRage.Network;
+using System.Diagnostics;
+using Sandbox.Graphics.GUI;
+using Sandbox.Game.Entities;
+using System.Runtime.InteropServices.WindowsRuntime;
+using VRage.Game.VisualScripting;
 
 namespace SpaceEngineers.UWBlockPrograms.SpaceElevator {
     public sealed class Program : MyGridProgram {
 #endregion
 // YOUR CODE BEGIN
-// In m/s
-const float FAST_SPEED = 12;
-const float SLOW_SPEED = 5;
+string arg = "";
+int delay = 0;
+const int DELAY = 4;
 
-string speLastArg = "";
-Vector3D lastPos;
 public Program() {
     Runtime.UpdateFrequency = UpdateFrequency.Update10;
-    lastPos = Me.Position;
 }
+
 
 public void Main(string argument, UpdateType updateSource) {
-    List<IMyMotorSuspension> suspensions = new List<IMyMotorSuspension>();
-    GridTerminalSystem.GetBlocksOfType<IMyMotorSuspension>(suspensions, s => s.CubeGrid.CustomName == Me.CubeGrid.CustomName);
-    
-    IMyTextPanel statusPanel = (IMyTextPanel)GridTerminalSystem.GetBlockWithName("SpaceElevatorStatus");
-    
-    List<IMyCockpit> cockpits = new List<IMyCockpit>();
-    GridTerminalSystem.GetBlocksOfType<IMyCockpit>(cockpits, c => c.CubeGrid.CustomName == Me.CubeGrid.CustomName);
-    IMyCockpit cockpit = cockpits[0];
+    Elevator.lcd = (IMyTextPanel)GridTerminalSystem.GetBlockWithName("SPE_Status");
+    Elevator.connector = (IMyShipConnector)GridTerminalSystem.GetBlockWithName("SPE_Connector");
+    Elevator.piston = (IMyPistonBase)GridTerminalSystem.GetBlockWithName("SPE_Piston");
+    Elevator.mergerTop = (IMyShipMergeBlock)GridTerminalSystem.GetBlockWithName("SPE_MergerTop");
+    Elevator.mergerBottom = (IMyShipMergeBlock)GridTerminalSystem.GetBlockWithName("SPE_MergerBottom");
 
-    if (argument == "Slow") {
-        foreach (var s in suspensions) {
-            suspensions[0].SetValue<float>("Speed Limit", SLOW_SPEED*3.6f);
-        }
+    if (arg != argument && argument != "") {
+        arg = argument;
+    }
+    if (delay > 0) {
+        delay--;
         return;
+    } else {
+        delay = DELAY;
     }
 
-    if (argument == "Fast") {
-        foreach (var s in suspensions) {
-            suspensions[0].SetValue<float>("Speed Limit", FAST_SPEED*3.6f);
-        }
-        return;
+    Elevator.CheckStatus(arg);
+    if (Elevator.Step(arg)) {
+        delay = DELAY;
     }
-    
-    if (argument != speLastArg && argument != "") {
-        if (speLastArg != "Stop") {
-            speLastArg = "Stop";
-        } else {
-            speLastArg = argument;
-        }
-    }
-
-    double speed = (Me.CubeGrid.GetPosition() - lastPos).Length() / Runtime.TimeSinceLastRun.Duration().TotalSeconds;
-    double maxSpeed = suspensions[0].GetValue<float>("Speed Limit")/3.6;
-    lastPos = Me.CubeGrid.GetPosition();
-    float propulsion = suspensions[0].GetValue<float>("Propulsion override");
-
-    switch (speLastArg) {
-        case "Up":
-            cockpit.HandBrake = false;
-            if (speed < maxSpeed*0.75) {
-                propulsion += 0.001f;
-            } else if (speed > maxSpeed) {
-                propulsion -= 0.001f;
-            }
-            break;
-
-        case "Down":
-            if (speed < maxSpeed*0.75) {
-                propulsion -= 0.001f;
-                cockpit.HandBrake = false;
-            } else if (speed > maxSpeed) {
-                propulsion += 0.001f;
-                cockpit.HandBrake = true;
-            }
-            break;
-
-        case "Stop":
-            cockpit.HandBrake = true;
-            propulsion = (float)(0.14 * cockpit.GetNaturalGravity().Length() / 10);
-            break;
-    }
-
-    foreach (var s in suspensions) {
-        s.SetValue<float>("Propulsion override", propulsion);
-    }
-    LCDWrite(statusPanel, $"Max Speed: {maxSpeed:F1}m/s\nCur Speed: {speed:F1}m/s\nPropulsion: {propulsion*100:F2}%\nBraking: {cockpit.HandBrake}\n");
 }
 
-void LCDWrite(IMyTextPanel lcd, string msg, bool clear = true) {
-    lcd.ContentType = ContentType.TEXT_AND_IMAGE;
-    lcd.FontSize = 1.25f;
-    lcd.FontColor = Color.Red;
-    lcd.WriteText(msg, !clear);
+
+class Elevator {
+    public const float PISTON_SPEED = 2.7f;
+    public static IMyShipMergeBlock mergerBottom;
+    public static IMyShipMergeBlock mergerTop;
+    public static IMyShipConnector connector;
+    public static IMyPistonBase piston;
+    public static IMyTextPanel lcd;
+    public enum STATUS {
+        Extending,
+        Retracting,
+        Stopped
+    }
+    private static STATUS curStatus;
+
+    public static bool Step(string command) {
+        if (command == "Up") {
+            LCDWrite("ASCENDING\n----------\n");
+            LCDWrite($"Status: {curStatus}\n", false);
+            switch (curStatus) {
+                case STATUS.Extending:
+                    return ExtendUp();
+                case STATUS.Retracting:
+                    return RetractUp();
+            }
+
+        } else if (command == "Down") {
+            LCDWrite("DESCENDING\n----------\n");
+            LCDWrite($"Status: {curStatus}\n", false);
+            switch (curStatus) {
+                case STATUS.Extending:
+                    return ExtendDown();
+                case STATUS.Retracting:
+                    return RetractDown();
+            }
+        } else {
+            piston.Velocity = 0;
+            LCDWrite("STOPPED\n----------\n");
+            LCDWrite($"Status: {curStatus}\n", false);
+        }
+        return false;
+    }
+
+    public static void CheckStatus(string arg) {
+        if (connector.Status == MyShipConnectorStatus.Connectable && mergerBottom.IsConnected && !mergerTop.IsConnected) {
+            connector.Connect();
+        }
+        
+        // Moving upwards -> merger = Top && unmerger = Bottom
+        IMyShipMergeBlock merger;
+        IMyShipMergeBlock unmerger;
+        if (arg == "Up") {
+            merger = mergerTop;
+            unmerger = mergerBottom;
+        } else if (arg == "Down") {
+            merger = mergerBottom;
+            unmerger = mergerTop;
+        } else {
+            curStatus = STATUS.Stopped;
+            return;
+        }
+
+        if (unmerger.IsConnected && merger.IsConnected) {
+            if (piston.CurrentPosition < 5) {
+                curStatus = STATUS.Retracting;
+                return;
+            } else {
+                curStatus = STATUS.Extending;
+                return;
+            }
+        }
+        
+        if (unmerger.IsConnected) {
+            curStatus = STATUS.Extending;
+            return;
+        }
+        
+        if (merger.IsConnected) {
+            curStatus = STATUS.Retracting;
+            return;
+        }
+    }
+
+    private static bool ExtendUp() {
+        piston.Velocity = PISTON_SPEED;
+        if (piston.CurrentPosition < 9.9) {
+            return false;
+        }
+
+        mergerTop.ApplyAction("OnOff_On");
+        connector.Disconnect();
+        if (mergerTop.IsConnected) {
+            mergerBottom.ApplyAction("OnOff_Off");
+        }
+        return true;
+    }
+
+    private static bool RetractUp() {
+        piston.Velocity = -PISTON_SPEED;
+        if (piston.CurrentPosition > 0.1) {
+            return false;
+        }
+
+        mergerBottom.ApplyAction("OnOff_On");
+        if (mergerBottom.IsConnected) {
+            mergerTop.ApplyAction("OnOff_Off");
+        }
+        return true;
+    }
+
+    private static bool ExtendDown() {
+        piston.Velocity = PISTON_SPEED;
+        if (piston.CurrentPosition < 9.9) {
+            return false;
+        }
+
+        mergerBottom.ApplyAction("OnOff_On");
+        mergerTop.ApplyAction("OnOff_Off");
+        return true;
+    }
+
+    private static bool RetractDown() {
+        piston.Velocity = -PISTON_SPEED;
+        if (piston.CurrentPosition > 0.1) {
+            return false;
+        }
+
+        mergerTop.ApplyAction("OnOff_On");
+        connector.Disconnect();
+        if (mergerTop.IsConnected) {
+            mergerBottom.ApplyAction("OnOff_Off");
+        }
+        return true;
+    }
+
+    private static void LCDWrite(string msg, bool clear = true) {
+        lcd.ContentType = ContentType.TEXT_AND_IMAGE;
+        lcd.FontSize = 1.1f;
+        lcd.FontColor = Color.LightBlue;
+        lcd.WriteText(msg, !clear);
+    }
 }
 // YOUR CODE END
 #region PreludeFooter

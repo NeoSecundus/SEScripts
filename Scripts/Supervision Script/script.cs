@@ -328,7 +328,13 @@ public void CargoSupervision() {
 public string constructGunString(IMyFunctionalBlock block) {
     List<MyInventoryItem> items = new List<MyInventoryItem>();
     block.GetInventory().GetItems(items);
-    int ammo = (int)items[0].Amount;
+    int ammo;
+
+    try {
+        ammo = (int)items[0].Amount;
+    } catch (Exception e) {
+        ammo = 0;
+    }
     
     int health = (int)(getBlockHealth(block) * 100);
     return $"{block.CustomName}: {ammo}u | {health}%\n";
