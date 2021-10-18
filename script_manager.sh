@@ -6,7 +6,7 @@ CLM="SESM >"
 print() {
     if [[ $# -ne 1 ]]; then
         echo "Wrong number of arguments! Expected 1 (msg)"
-        return -1
+        return 1
     fi
 
     echo "> $1"
